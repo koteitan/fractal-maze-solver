@@ -4,7 +4,8 @@
 #include <time.h>
 #include <vector>
 #include <unordered_set>
-#define MODEL_2022_SHUKE_NO3
+#define MODEL_TEST_1
+#undef  MODEL_2022_SHUKE_NO3
 
 typedef struct Global{
   struct Global *parent;
@@ -29,27 +30,103 @@ struct GlobalHash {
   }
 };
 
+#ifdef MODEL_TEST_1
+#define NBLOCK   (1)
+#define NPORTS   (6)
+#define NNEXTMAX (1)
+const int inextlocal[NBLOCK][NPORTS] = {{0, 1, 2, 3, 4, 5}};
+const int nnextlocal[NBLOCK][NPORTS] = {{1, 1, 1, 1, 1, 0}};
+const int nextlocal[5][3] = {
+//{dD, B, P}, //local(D, P) -> (D  , P)
+  {+1, 0, 1}, // 0   (d, 0) -> (d+1, 1)
+  {+1, 0, 2}, // 1   (d, 1) -> (d+1, 2)
+  {+0, 0, 3}, // 2   (d, 2) -> (d  , 3)
+  {-1, 0, 4}, // 3   (d, 3) -> (d-1, 4)
+  {-1, 0, 5}, // 4   (d, 4) -> (d-1, 5)
+};
+/*                          d, b, p */
+Global start = {NULL, 0, 0, 0};
+Global goal  = {NULL, 0, 0, 5};
+static void print_global(Global *g){
+  char out[8192]="";
+  char str[8192];
+  Global *local = g;
+  do{
+    sprintf(str, "%d", local->port);
+    strcat(str, out);
+    strcpy(out, str);
+    local = local->parent;
+  }while(local != NULL);
+  printf("%s", out);
+}
+static void getnext(std::vector<Global> *vto, Global *from){
+  //printf("from : "); print_global(from); printf("\n");
+  int b = from->block;
+  int p = from->port;
+  int num = nnextlocal[b][p];
+  int idx = inextlocal[b][p];
+  int depth = from->depth;
+  Global *parent = from->parent;
+  for(int i = 0; i < num; i++){
+    int local = idx + i;
+    printf("local=%d\n", local);
+    int ddepth  = nextlocal[local][0];
+    printf("ddepth=%d\n", ddepth);
+    if(ddepth == +1){
+      // go down or stay
+      Global to;
+      to.depth  = ddepth + depth;
+      to.port   = nextlocal[local][2];
+      to.block  = nextlocal[local][1];
+      to.parent = from;
+      vto->push_back(to);
+      printf("todn: "); print_global(&to); printf("\n");
+    }if(ddepth == 0){
+      // stay
+      Global to;
+      to.depth  = ddepth + depth;
+      to.port   = nextlocal[local][2];
+      to.block  = b;
+      to.parent = parent;
+      vto->push_back(to);
+      printf("toeq: "); print_global(&to); printf("\n");
+    }else{
+      // go up
+      if(parent == NULL) continue;
+      Global to;
+      to.depth  = ddepth + depth;
+      to.port   = nextlocal[local][2];
+      to.block  = parent->block;
+      to.parent = parent->parent;
+      vto->push_back(to);
+      printf("toup: "); print_global(&to); printf("\n");
+      /* nop */
+    }
+  }
+}
+#endif /* MODEL_TEST_1 */
+
 #ifdef MODEL_2022_SHUKE_NO3
 #define NBLOCK   (2)
 #define NPORTS   (3)
 #define NNEXTMAX (4)
-const int inextlocal[NBLOCK][NPORTS] = {{0, 1, 4}, {6, 9, 11}};
+const int inextlocal[NBLOCK][NPORTS] = {{0, 1, 4}, {5, 9, 11}};
 const int nnextlocal[NBLOCK][NPORTS] = {{1, 3, 2}, {3, 2,  2}};
 const int nextlocal[13][3] = {
 //{dD, B, P}, //local(D, BP) -> (D  , BP)
-  {+1, 0, 1}, // 0 (d, L0) -> (d+1, L1)
-  {+1, 0, 2}, // 1 (d, L1) -> (d+1, L2)
-  {+1, 1, 1}, // 2 (d, L1) -> (d+1, R1)
-  {-1, 0, 0}, // 3 (d, L1) -> (d-1, *0)
-  {+1, 1, 2}, // 4 (d, L2) -> (d+1, R2)
-  {+1, 0, 1}, // 5 (d, R0) -> (d+1, L1)
-  {+1, 1, 1}, // 6 (d, R0) -> (d+1, R1)
-  {-1, 0, 0}, // 7 (d, R0) -> (d-1, *0)
-  {-1, 0, 2}, // 8 (d, R0) -> (d-1, *2)
-  {+1, 0, 2}, // 9 (d, R1) -> (d+1, L2)
-  {+1, 1, 1}, //10 (d, R1) -> (d+1, R1)
-  {+1, 1, 2}, //11 (d, R2) -> (d+1, R2)
-  {-1, 0, 0}, //12 (d, R2) -> (d-1, *0)
+  {+1, 0, 1}, // 0   (d, L0) -> (d+1, L1)
+  {+1, 0, 2}, // 1   (d, L1) -> (d+1, L2)
+  {+1, 1, 1}, // 2   (d, L1) -> (d+1, R1)
+  {-1, 0, 0}, // 3   (d, L1) -> (d-1, U0)
+  {+1, 1, 2}, // 4   (d, L2) -> (d+1, R2)
+  {-1, 0, 1}, // 5   (d, L2) -> (d-1, U1)
+  {+1, 0, 1}, // 6   (d, R0) -> (d+1, L1)
+  {-1, 0, 1}, // 7   (d, R0) -> (d-1, U1)
+  {-1, 0, 2}, // 8   (d, R0) -> (d-1, U2)
+  {+1, 0, 2}, // 9   (d, R1) -> (d+1, L2)
+  {+1, 1, 1}, //10   (d, R1) -> (d+1, R1)
+  {+1, 1, 2}, //11   (d, R2) -> (d+1, R2)
+  {-1, 0, 0}, //12   (d, R2) -> (d-1, U0)
 }; 
 /*                          d, b, p */
 Global start = {NULL, 0, 0, 0};
@@ -78,11 +155,11 @@ static void getnext(std::vector<Global> *vto, Global *from){
   for(int i = 0; i < num; i++){
     int local = idx + i;
     int ddepth  = nextlocal[local][0];
-    if(ddepth == +1){
-      // go down
+    if(ddepth != -1){
+      // go down or stay
       Global to;
       to.depth  = ddepth + depth;
-      to.port   = nextlocal[i][2];
+      to.port   = nextlocal[local][2];
       to.block  = nextlocal[local][1];
       to.parent = from;
       vto->push_back(to);
@@ -93,7 +170,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       if(parent == NULL) continue;
       Global to;
       to.depth  = ddepth + depth;
-      to.port   = nextlocal[i][2];
+      to.port   = nextlocal[local][2];
       to.block  = parent->block;
       to.parent = parent->parent;
       vto->push_back(to);
@@ -102,7 +179,8 @@ static void getnext(std::vector<Global> *vto, Global *from){
     }
   }
 }
-#endif
+#endif /* MODEL_2022_SHUKE_NO3 */
+
 static std::unordered_set<Global* , GlobalHash, GlobalPtrEqual> coldpool;
 static std::unordered_set<Global* , GlobalHash, GlobalPtrEqual> hotpool;
 static std::unordered_set<Global* , GlobalHash, GlobalPtrEqual> newpool;
@@ -125,11 +203,13 @@ static void print_pools(){
 }
 
 int main(int argc, char *argv[]) {
-  const int maxmaxdepth = 100;
-  const int maxmaxstep  = 100;
-  for(int maxdepth=0; maxdepth<maxmaxdepth; maxdepth++){
+  const int startmaxdepth = 12;
+  const int maxmaxdepth   = 13;
+  const int startmaxstep  = 12;
+  const int maxmaxstep    = 13;
+  for(int maxdepth=startmaxdepth; maxdepth<maxmaxdepth; maxdepth++){
     int max_reached_depth = -1;
-    for(int maxstep=1; maxstep<maxmaxstep; maxstep++){
+    for(int maxstep=startmaxstep; maxstep<maxmaxstep; maxstep++){
       int reached_depth = 0;
       printf("maxdepth=%d, maxstep=%d\n", maxdepth, maxstep);
       /* init game */
