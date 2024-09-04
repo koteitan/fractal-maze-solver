@@ -68,7 +68,7 @@ static void print_global(Global *g){
   printf("%s", out);
 }
 static void getnext(std::vector<Global> *vto, Global *from){
-  printf("from : "); print_global(from); printf("\n");
+  //printf("from : "); print_global(from); printf("\n");
   int b = from->block;
   int p = from->port;
   int num = nnextlocal[b][p];
@@ -86,7 +86,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.block  = nextlocal[local][1];
       to.parent = from;
       vto->push_back(to);
-      printf("todn: "); print_global(&to); printf("\n");
+      //printf("todn: "); print_global(&to); printf("\n");
     }else{
       continue;
       // go up
@@ -97,7 +97,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.block  = parent->block;
       to.parent = parent->parent;
       vto->push_back(to);
-      printf("toup: "); print_global(&to); printf("\n");
+      //printf("toup: "); print_global(&to); printf("\n");
       /* nop */
     }
   }
@@ -125,8 +125,8 @@ static void print_pools(){
 }
 
 int main(int argc, char *argv[]) {
-  const int maxmaxdepth = 10;
-  const int maxmaxstep  = 10;
+  const int maxmaxdepth = 100;
+  const int maxmaxstep  = 100;
   for(int maxdepth=0; maxdepth<maxmaxdepth; maxdepth++){
     int max_reached_depth = -1;
     for(int maxstep=1; maxstep<maxmaxstep; maxstep++){
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
         /* take each global position from hotpool */
         bool isfound = false;
 
-        print_pools();
+        //print_pools();
 
         for(auto it=hotpool.begin(); it!=hotpool.end(); it++){
           Global *from = *it;
@@ -148,11 +148,13 @@ int main(int argc, char *argv[]) {
           std::vector<Global> tolist;
           getnext(&tolist, from);
           int nnext = tolist.size();
+#if 0
           printf("tolist:\n");
           for(int inext=0; inext<nnext; inext++){
             Global to = tolist[inext];
             printf("%p:{%d,%d,%d,%p}\n", &to, to.depth, to.block, to.port, to.parent);
           }
+#endif
 
           /* take each next global position and add it to newpool */
           for(int inext=0; inext<nnext; inext++){
