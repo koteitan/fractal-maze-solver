@@ -132,10 +132,15 @@ const int nextlocal[13][3] = {
   {+1, 1, 2}, //11   (d, R2) -> (d+1, R2)
   {-1, 0, 0}, //12   (d, R2) -> (d-1, U0)
 }; 
-/*                    d, b, p */
-Global start = {NULL, 0, 0, 0};
-Global goal  = {NULL, 0, 2, 0};
-static const int N = 25;
+/*                       d, b, p */
+Global L0     = {NULL  , 0, 0, 0};
+Global L0L1   = {&L0   , 1, 0, 1};
+Global L0L1L1 = {&L0L1 , 2, 0, 1};
+Global L0R0   = {&L0   , 1, 1, 0};
+Global L2     = {NULL  , 0, 0, 2};
+Global start  = L0;
+Global goal   = L2;
+static const int N = 17;
 static const int startmaxdepth = N-1;
 static const int maxmaxdepth   = N;
 static const int startmaxstep  = N-1;
@@ -175,6 +180,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       //printf("todn: "); print_global(&to); printf("\n");
     }else{
       // go up
+      //printf("toup: local=%d\n", local);
       if(parent == NULL) continue;
       Global to;
       to.depth  = ddepth + depth;
@@ -210,15 +216,15 @@ static void print_pools(){
 }
 
 int main(int argc, char *argv[]) {
-  for(int maxdepth=startmaxdepth; maxdepth<maxmaxdepth; maxdepth++){
+  for(int maxdepth=startmaxdepth; maxdepth<=maxmaxdepth; maxdepth++){
     int max_reached_depth = -1;
-    for(int maxstep=startmaxstep; maxstep<maxmaxstep; maxstep++){
+    for(int maxstep=startmaxstep; maxstep<=maxmaxstep; maxstep++){
       int reached_depth = 0;
       printf("maxdepth=%d, maxstep=%d\n", maxdepth, maxstep);
       /* init game */
       hotpool.insert(&start);
       /* start game */
-      for(int istep=0; istep<maxstep; istep++){
+      for(int istep=0; istep<=maxstep; istep++){
         /* take each global position from hotpool */
         bool isfound = false;
 
