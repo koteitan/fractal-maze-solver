@@ -4,8 +4,8 @@
 #include <time.h>
 #include <vector>
 #include <unordered_set>
-#define MODEL_TEST_1
-#undef  MODEL_2022_SHUKE_NO3
+#undef  MODEL_TEST_1
+#define MODEL_2022_SHUKE_NO3
 
 typedef struct Global{
   struct Global *parent;
@@ -47,6 +47,10 @@ const int nextlocal[5][3] = {
 /*                          d, b, p */
 Global start = {NULL, 0, 0, 0};
 Global goal  = {NULL, 0, 0, 5};
+static const int startmaxdepth = 12;
+static const int maxmaxdepth   = 13;
+static const int startmaxstep  = 12;
+static const int maxmaxstep    = 13;
 static void print_global(Global *g){
   char out[8192]="";
   char str[8192];
@@ -110,7 +114,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
 #define NBLOCK   (2)
 #define NPORTS   (3)
 #define NNEXTMAX (4)
-const int inextlocal[NBLOCK][NPORTS] = {{0, 1, 4}, {5, 9, 11}};
+const int inextlocal[NBLOCK][NPORTS] = {{0, 1, 4}, {6, 9, 11}};
 const int nnextlocal[NBLOCK][NPORTS] = {{1, 3, 2}, {3, 2,  2}};
 const int nextlocal[13][3] = {
 //{dD, B, P}, //local(D, BP) -> (D  , BP)
@@ -128,9 +132,14 @@ const int nextlocal[13][3] = {
   {+1, 1, 2}, //11   (d, R2) -> (d+1, R2)
   {-1, 0, 0}, //12   (d, R2) -> (d-1, U0)
 }; 
-/*                          d, b, p */
+/*                    d, b, p */
 Global start = {NULL, 0, 0, 0};
 Global goal  = {NULL, 0, 2, 0};
+static const int N = 25;
+static const int startmaxdepth = N-1;
+static const int maxmaxdepth   = N;
+static const int startmaxstep  = N-1;
+static const int maxmaxstep    = N;
 const char *blockname[NBLOCK] = {"L", "R"};
 static void print_global(Global *g){
   char out[8192]="";
@@ -165,7 +174,6 @@ static void getnext(std::vector<Global> *vto, Global *from){
       vto->push_back(to);
       //printf("todn: "); print_global(&to); printf("\n");
     }else{
-      continue;
       // go up
       if(parent == NULL) continue;
       Global to;
@@ -175,7 +183,6 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.parent = parent->parent;
       vto->push_back(to);
       //printf("toup: "); print_global(&to); printf("\n");
-      /* nop */
     }
   }
 }
@@ -203,10 +210,6 @@ static void print_pools(){
 }
 
 int main(int argc, char *argv[]) {
-  const int startmaxdepth = 12;
-  const int maxmaxdepth   = 13;
-  const int startmaxstep  = 12;
-  const int maxmaxstep    = 13;
   for(int maxdepth=startmaxdepth; maxdepth<maxmaxdepth; maxdepth++){
     int max_reached_depth = -1;
     for(int maxstep=startmaxstep; maxstep<maxmaxstep; maxstep++){
@@ -246,8 +249,8 @@ int main(int argc, char *argv[]) {
               *pto = to;
               newpool.insert(pto);
               if(to.depth > reached_depth) reached_depth = to.depth;
+              printf("%4d:", istep); print_global(pto); printf("<-"); print_global(from); printf("\n");
             }
-            printf("%4d:", istep); print_global(pto); printf("<-"); print_global(from); printf("\n");
 
             if(to == goal){
               printf("goal\n");
