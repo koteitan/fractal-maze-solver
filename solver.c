@@ -9,6 +9,7 @@
 
 typedef struct Global{
   struct Global *parent;
+  struct Global *track;
   int depth;
   int block;
   int port;
@@ -44,9 +45,9 @@ const int nextlocal[5][3] = {
   {-1, 0, 4}, // 3   (d, 3) -> (d-1, 4)
   {-1, 0, 5}, // 4   (d, 4) -> (d-1, 5)
 };
-/*                          d, b, p */
-Global start = {NULL, 0, 0, 0};
-Global goal  = {NULL, 0, 0, 5};
+/*              parent, track, d, b, p */
+Global start = {NULL  , NULL , 0, 0, 0};
+Global goal  = {NULL  , NULL , 0, 0, 5};
 static const int startmaxdepth = 12;
 static const int maxmaxdepth   = 13;
 static const int startmaxstep  = 12;
@@ -83,6 +84,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.port   = nextlocal[local][2];
       to.block  = nextlocal[local][1];
       to.parent = from;
+      to.track  = from;
       vto->push_back(to);
       printf("todn: "); print_global(&to); printf("\n");
     }if(ddepth == 0){
@@ -92,6 +94,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.port   = nextlocal[local][2];
       to.block  = b;
       to.parent = parent;
+      to.track  = from;
       vto->push_back(to);
       printf("toeq: "); print_global(&to); printf("\n");
     }else{
@@ -102,6 +105,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.port   = nextlocal[local][2];
       to.block  = parent->block;
       to.parent = parent->parent;
+      to.track  = from;
       vto->push_back(to);
       printf("toup: "); print_global(&to); printf("\n");
       /* nop */
@@ -132,14 +136,9 @@ const int nextlocal[13][3] = {
   {+1, 1, 2}, //11   (d, R2) -> (d+1, R2)
   {-1, 0, 0}, //12   (d, R2) -> (d-1, U0)
 }; 
-/*                       d, b, p */
-Global L0     = {NULL  , 0, 0, 0};
-Global L0L1   = {&L0   , 1, 0, 1};
-Global L0L1L1 = {&L0L1 , 2, 0, 1};
-Global L0R0   = {&L0   , 1, 1, 0};
-Global L2     = {NULL  , 0, 0, 2};
-Global start  = L0;
-Global goal   = L2;
+/*              parent, track, d, b, p */
+Global start = {NULL  , NULL , 0, 0, 0};
+Global goal  = {NULL  , NULL , 0, 0, 2};
 static const int N = 17;
 static const int startmaxdepth = N-1;
 static const int maxmaxdepth   = N;
@@ -176,6 +175,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.port   = nextlocal[local][2];
       to.block  = nextlocal[local][1];
       to.parent = from;
+      to.track  = from;
       vto->push_back(to);
       //printf("todn: "); print_global(&to); printf("\n");
     }else{
@@ -187,6 +187,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
       to.port   = nextlocal[local][2];
       to.block  = parent->block;
       to.parent = parent->parent;
+      to.track  = from;
       vto->push_back(to);
       //printf("toup: "); print_global(&to); printf("\n");
     }
@@ -216,13 +217,16 @@ static void print_pools(){
 }
 
 int main(int argc, char *argv[]) {
+  Global *solution = NULL;
   for(int maxdepth=startmaxdepth; maxdepth<=maxmaxdepth; maxdepth++){
     int max_reached_depth = -1;
     for(int maxstep=startmaxstep; maxstep<=maxmaxstep; maxstep++){
       int reached_depth = 0;
       printf("maxdepth=%d, maxstep=%d\n", maxdepth, maxstep);
       /* init game */
+
       hotpool.insert(&start);
+
       /* start game */
       for(int istep=0; istep<=maxstep; istep++){
         /* take each global position from hotpool */
@@ -255,12 +259,12 @@ int main(int argc, char *argv[]) {
               *pto = to;
               newpool.insert(pto);
               if(to.depth > reached_depth) reached_depth = to.depth;
-              printf("%4d:", istep); print_global(pto); printf("<-"); print_global(from); printf("\n");
+              printf("%4d:", istep); print_global(pto); printf(" <- "); print_global(from); printf("\n");
             }
 
             if(to == goal){
-              printf("goal\n");
-              return EXIT_SUCCESS;
+              solution = pto;
+              goto goal;
             }
           } /* for all next */
 
@@ -297,5 +301,21 @@ int main(int argc, char *argv[]) {
     } /* for all maxsteps */
   } /* for all maxdepths */
     
+  return EXIT_SUCCESS;
+
+goal:
+  printf("goal!\n");
+  printf("\n");
+  printf("solution:\n");
+  Global *g = solution;
+  std::vector<Global*> v;
+  do{
+    v.push_back(g);
+    g = g->track;
+  }while(g != NULL);
+  for(int i=v.size()-1; i>=0; i--){
+    print_global(v[i]);
+    printf("\n");
+  }
   return EXIT_SUCCESS;
 }
