@@ -5,7 +5,7 @@
 #include <vector>
 #include <unordered_set>
 #undef  MODEL_TEST_1
-#define MODEL_2022_SHUKE_NO3
+#define MODEL_2022_SNUKE_NO3
 
 typedef struct Global{
   struct Global *parent;
@@ -110,7 +110,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
 }
 #endif /* MODEL_TEST_1 */
 
-#ifdef MODEL_2022_SHUKE_NO3
+#ifdef MODEL_2022_SNUKE_NO3
 #define NBLOCK   (2)
 #define NPORTS   (3)
 #define NNEXTMAX (4)
@@ -192,7 +192,7 @@ static void getnext(std::vector<Global> *vto, Global *from){
     }
   }
 }
-#endif /* MODEL_2022_SHUKE_NO3 */
+#endif /* MODEL_2022_SNUKE_NO3 */
 
 static std::unordered_set<Global* , GlobalHash, GlobalPtrEqual> coldpool;
 static std::unordered_set<Global* , GlobalHash, GlobalPtrEqual> hotpool;
