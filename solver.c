@@ -48,8 +48,6 @@ const int nextlocal[5][3] = {
 /*              parent, track, d, b, p */
 Global start = {NULL  , NULL , 0, 0, 0};
 Global goal  = {NULL  , NULL , 0, 0, 5};
-static const int startmaxdepth = 12;
-static const int maxmaxdepth   = 13;
 static const int startmaxstep  = 12;
 static const int maxmaxstep    = 13;
 static void print_global(Global *g){
@@ -140,8 +138,6 @@ const int nextlocal[13][3] = {
 Global start = {NULL  , NULL , 0, 0, 0};
 Global goal  = {NULL  , NULL , 0, 0, 2};
 static const int N = 17;
-static const int startmaxdepth = N-1;
-static const int maxmaxdepth   = N;
 static const int startmaxstep  = N-1;
 static const int maxmaxstep    = N;
 const char *blockname[NBLOCK] = {"L", "R"};
@@ -218,88 +214,78 @@ static void print_pools(){
 
 int main(int argc, char *argv[]) {
   Global *solution = NULL;
-  for(int maxdepth=startmaxdepth; maxdepth<=maxmaxdepth; maxdepth++){
-    int max_reached_depth = -1;
-    for(int maxstep=startmaxstep; maxstep<=maxmaxstep; maxstep++){
-      int reached_depth = 0;
-      printf("maxdepth=%d, maxstep=%d\n", maxdepth, maxstep);
-      /* init game */
+  for(int maxstep=startmaxstep; maxstep<=maxmaxstep; maxstep++){
+    int reached_depth = 0;
+    printf("maxstep=%d\n", maxstep);
+    /* init game */
 
-      hotpool.insert(&start);
+    hotpool.insert(&start);
 
-      /* start game */
-      for(int istep=0; istep<=maxstep; istep++){
-        /* take each global position from hotpool */
-        bool isfound = false;
+    /* start game */
+    for(int istep=0; istep<=maxstep; istep++){
+      /* take each global position from hotpool */
+      bool isfound = false;
 
-        //print_pools();
+      //print_pools();
 
-        for(auto it=hotpool.begin(); it!=hotpool.end(); it++){
-          Global *from = *it;
-          if(from->depth > maxdepth) continue;
+      for(auto it=hotpool.begin(); it!=hotpool.end(); it++){
+        Global *from = *it;
 
-          std::vector<Global> tolist;
-          getnext(&tolist, from);
-          int nnext = tolist.size();
+        std::vector<Global> tolist;
+        getnext(&tolist, from);
+        int nnext = tolist.size();
 #if 0
-          printf("tolist:\n");
-          for(int inext=0; inext<nnext; inext++){
-            Global to = tolist[inext];
-            printf("%p:{%d,%d,%d,%p}\n", &to, to.depth, to.block, to.port, to.parent);
-          }
+        printf("tolist:\n");
+        for(int inext=0; inext<nnext; inext++){
+          Global to = tolist[inext];
+          printf("%p:{%d,%d,%d,%p}\n", &to, to.depth, to.block, to.port, to.parent);
+        }
 #endif
 
-          /* take each next global position and add it to newpool */
-          for(int inext=0; inext<nnext; inext++){
-            Global to = tolist[inext];
-            Global *pto = NULL;
-            if(coldpool.find(&to) == coldpool.end() && hotpool.find(&to) == hotpool.end()){
-              isfound = true;
-              pto = new Global;
-              *pto = to;
-              newpool.insert(pto);
-              if(to.depth > reached_depth) reached_depth = to.depth;
-              printf("%4d:", istep); print_global(pto); printf(" <- "); print_global(from); printf("\n");
-            }
+        /* take each next global position and add it to newpool */
+        for(int inext=0; inext<nnext; inext++){
+          Global to = tolist[inext];
+          Global *pto = NULL;
+          if(coldpool.find(&to) == coldpool.end() && hotpool.find(&to) == hotpool.end()){
+            isfound = true;
+            pto = new Global;
+            *pto = to;
+            newpool.insert(pto);
+            if(to.depth > reached_depth) reached_depth = to.depth;
+            printf("%4d:", istep); print_global(pto); printf(" <- "); print_global(from); printf("\n");
+          }
 
-            if(to == goal){
-              solution = pto;
-              goto goal;
-            }
-          } /* for all next */
+          if(to == goal){
+            solution = pto;
+            goto goal;
+          }
+        } /* for all next */
 
-        } /* for all elements in hotpool */
-        if(!isfound) break;
+      } /* for all elements in hotpool */
+      if(!isfound) break;
 
-        /* move new -> cold */
-        for(auto it=hotpool.begin(); it!=hotpool.end(); it++){
-          coldpool.insert(*it);
-        }
-        hotpool.clear();
-
-        /* move new -> hot */
-        for(auto it=newpool.begin(); it!=newpool.end(); it++){
-          hotpool.insert(*it);
-        }
-        newpool.clear();
-
-      } /* for all steps */
-
-      /* game over */
-      printf("maxdepth=%d, maxstep=%d was unsolvable.\n", maxdepth, maxmaxstep);
-      
-      /* clear all pools */
-      hotpool.clear();
-      coldpool.clear();
-
-      if(reached_depth > max_reached_depth){
-        max_reached_depth = reached_depth;
-      }else{
-        break;
+      /* move new -> cold */
+      for(auto it=hotpool.begin(); it!=hotpool.end(); it++){
+        coldpool.insert(*it);
       }
+      hotpool.clear();
 
-    } /* for all maxsteps */
-  } /* for all maxdepths */
+      /* move new -> hot */
+      for(auto it=newpool.begin(); it!=newpool.end(); it++){
+        hotpool.insert(*it);
+      }
+      newpool.clear();
+
+    } /* for all steps */
+
+    /* game over */
+    printf("maxstep=%d was unsolvable.\n", maxmaxstep);
+    
+    /* clear all pools */
+    hotpool.clear();
+    coldpool.clear();
+
+  } /* for all maxsteps */
     
   return EXIT_SUCCESS;
 
