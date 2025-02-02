@@ -21,6 +21,7 @@ static const int nextlocal_init[11][5] = {
   {1, 2, -1, 0, 2},
   {0, 2, -1, 0, 1},
 };
+static std::vector<int*> nextlocal;
 static void init_nextlocal(){
   for(int i=0; i<13; i++){
     int *next = new int[5];
@@ -30,7 +31,6 @@ static void init_nextlocal(){
     nextlocal.push_back(next);
   }
 }
-static std::vector<int*> nextlocal;
 /*                     parent, track, d, b, p */
 extern const Global start = {NULL  , NULL , 0, 0, 0};
 extern const Global goal  = {NULL  , NULL , 0, 0, 1};
