@@ -1,8 +1,9 @@
 #ifndef MAZE_H
 #define MAZE_H
 
-#define MAZE_SNUKE_NO4
-#undef  MAZE_KOTEITAN
+#undef  MAZE_SNUKE_NO3
+#undef  MAZE_SNUKE_NO4
+#define MAZE_KOTEITAN
 
 typedef struct Global{
   struct Global *parent;

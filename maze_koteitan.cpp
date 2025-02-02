@@ -5,22 +5,37 @@
 #include "maze.h"
 
 #ifdef MAZE_KOTEITAN
-#define NBLOCK   (5)
-#define NPORTS   (3)
-#define NNEXTLOC (11)
+/*                           parent, track, d, b, p */
+extern const Global start = {NULL  , NULL , 0, 0, 0};
+extern const Global goal  = {NULL  , NULL , 0, 0, 3};
+extern const int maxstep        = 100;
+extern const int startmaxdepth  = 1;
+extern const int maxmaxdepth    = 14;
+#define NNEXTLOC (21)
+#define NBLOCK   (10)
 static const int nextlocal_init[NNEXTLOC][5]={
-// B, P-> d, B, P 
-  {0, 0, +1, 0, 0},
-  {0, 0, +1, 1, 1},
-  {0, 1, +1, 2, 1},
-  {0, 1, +1, 3, 2},
-  {0, 2, +1, 4, 2},
-  {0, 2,  0, 0, 0},
-  {4, 0, -1, 0, 1},
-  {3, 1, -1, 0, 0},
-  {2, 0, -1, 0, 2},
-  {1, 2, -1, 0, 2},
-  {0, 2, -1, 0, 1},
+//  B, P-> d,  B, P 
+  {-1, 0, +1,  0, 0}, //  0
+  { 0, 0, +1,  1, 1}, //  1
+  { 1, 1, +1,  2, 1}, //  2
+  { 2, 1, +1,  3, 1}, //  3
+  { 3, 1, +1,  4, 2}, //  4
+  { 4, 2, +1,  5, 2}, //  5
+  { 5, 2, +1,  6, 2}, //  6
+  { 6, 2, +1,  7, 3}, //  7
+  { 7, 3, +1,  8, 3}, //  8
+  { 8, 3, +1,  9, 3}, //  9
+  { 9, 3,  0,  9, 2}, // 10
+  { 9, 2, -1,  8, 1}, // 11
+  { 8, 1, -1,  7, 0}, // 12
+  { 7, 0, -1,  6, 1}, // 13
+  { 6, 1, -1,  5, 0}, // 14
+  { 5, 0, -1,  4, 3}, // 15
+  { 4, 3, -1,  3, 0}, // 16
+  { 3, 0, -1,  2, 3}, // 17
+  { 2, 3, -1,  1, 2}, // 18
+  { 1, 2, -1,  0, 3}, // 19
+  { 0, 3, -1, -1, 1}, // 20
 };
 static std::vector<int*> nextlocal;
 static void init_nextlocal(){
@@ -32,16 +47,12 @@ static void init_nextlocal(){
     nextlocal.push_back(next);
   }
 }
-/*                     parent, track, d, b, p */
-extern const Global start = {NULL  , NULL , 0, 0, 0};
-extern const Global goal  = {NULL  , NULL , 0, 0, 1};
-extern const int maxstep        = 18;
-extern const int startmaxdepth  = 1;
-extern const int maxmaxdepth    = 7;
 void init_maze(){
   init_nextlocal();
 }
-static const char *blockname[NBLOCK] = {"A", "B", "C", "D", "E"};
+static const char *blockname[NBLOCK] = {
+  "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+};
 void print_global(Global *g){
   char out[8192]="";
   char str[8192];
