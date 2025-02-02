@@ -1,7 +1,7 @@
 #ifndef MAZE_H
 #define MAZE_H
 
-#define MAZE_SNUKE_NO3
+#define MAZE_SNUKE_NO4
 #undef  MAZE_KOTEITAN
 
 typedef struct Global{
