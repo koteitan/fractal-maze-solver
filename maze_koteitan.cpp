@@ -7,7 +7,8 @@
 #ifdef MAZE_KOTEITAN
 #define NBLOCK   (5)
 #define NPORTS   (3)
-static const int nextlocal_init[11][5] = {
+#define NNEXTLOC (11)
+static const int nextlocal_init[NNEXTLOC][5]={
 // B, P-> d, B, P 
   {0, 0, +1, 0, 0},
   {0, 0, +1, 1, 1},
@@ -23,7 +24,7 @@ static const int nextlocal_init[11][5] = {
 };
 static std::vector<int*> nextlocal;
 static void init_nextlocal(){
-  for(int i=0; i<13; i++){
+  for(int i=0; i<NNEXTLOC; i++){
     int *next = new int[5];
     for(int j=0; j<5; j++){
       next[j] = nextlocal_init[i][j];

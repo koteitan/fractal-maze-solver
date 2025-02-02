@@ -7,7 +7,8 @@
 #ifdef MAZE_SNUKE_NO3
 #define NBLOCK   (2)
 #define NPORTS   (3)
-static const int nextlocal_init[13][5] = {
+#define NNEXTLOC (13)
+static const int nextlocal_init[NNEXTLOC][5]={
 // B, P-> d, B, P   //     (D, BP) -> (D  , BP)
   {0, 0, +1, 0, 1}, // 0   (d, L0) -> (d+1, L1)
   {0, 1, +1, 0, 2}, // 1   (d, L1) -> (d+1, L2)
@@ -25,7 +26,7 @@ static const int nextlocal_init[13][5] = {
 };
 static std::vector<int*> nextlocal;
 static void init_nextlocal(){
-  for(int i=0; i<13; i++){
+  for(int i=0; i<NNEXTLOC; i++){
     int *next = new int[5];
     for(int j=0; j<5; j++){
       next[j] = nextlocal_init[i][j];
