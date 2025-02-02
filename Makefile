@@ -1,9 +1,8 @@
-# compile fractal-maze-solver.c
-.PHONY:all clean gdb
+.PHONY:all clean
 all:solver
-solver:solver.c
-	g++ -o $@ $^ -lm
+solver:solver.o maze_snuke_no3.o maze_koteitan.o
+	g++ -o solver solver.o maze_snuke_no3.o maze_koteitan.o -lm
+.c.o:
+	g++ -c $<
 clean:
-	rm -f solver
-gdb:solver.c
-	g++ -g3 -O0 -o solver solver.c -lm
+	rm -f solver *.o
